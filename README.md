@@ -18,6 +18,30 @@ That's it. Next time you open Claude Code and say something like "help me break 
 
 ---
 
+### visualization (Skill)
+
+A ready-to-use Claude Code skill that builds polished, single-file HTML visualizations - slide decks, dashboards, and diagrams. Zero dependencies, opens in any browser.
+
+It ships as a **template**: it works out of the box with a neutral theme, and you make it your own by editing two reference files.
+
+**Install:**
+
+```bash
+cp -r visualization ~/.claude/skills/visualization
+```
+
+Next time you say "make a deck," "build slides," or "visualize this," it activates automatically.
+
+**Customize it** so it produces *your* decks:
+
+- `references/design-system.md` - your colors and fonts (change this first)
+- `references/content-guidelines.md` - your writing and layout rules
+- `examples/` - create this folder and drop in 1-3 of your own decks to match their style
+
+**New to skills?** Open `visualization-guide.html` in your browser first - a short deck on what makes a good skill and how to install and customize this one.
+
+---
+
 ### skill-builder (Exercise)
 
 An interactive 45-minute exercise where you build your first Claude Code skill from scratch. Claude walks you through everything - no prior skill-building experience needed.
