@@ -1,0 +1,12 @@
+{
+  "name": "visualization",
+  "description": "Build polished single-file HTML slide decks, dashboards, and diagrams. Ships as a customizable template.",
+  "version": "1.0.0",
+  "author": {
+    "name": "AI Study Camp"
+  },
+  "homepage": "https://github.com/aistudycamp/skills",
+  "license": "MIT",
+  "keywords": ["visualization", "slides", "html", "teaching", "dashboard", "diagram"],
+  "skills": "./skills"
+}

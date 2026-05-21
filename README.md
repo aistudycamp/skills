@@ -1,52 +1,46 @@
-# Skills
+# AI Study Camp Skills
 
-Installable skills and exercises for [AI Study Camp](https://aistudycamp.com) students.
+A Claude Code plugin marketplace for [AI Study Camp](https://aistudycamp.com) students. Install skills straight into Claude Code - no downloads, no files to move.
 
 > **New to skills?** Start with the **[Visualization Skill guide](https://aistudycamp.github.io/skills/visualization-guide.html)** - a short deck on what makes a good skill, plus how to install and customize the visualization skill.
 
-## What's in this repo
+## Install a skill
 
-### idea-breakdown (Skill)
+Two commands, typed inside Claude Code. First, add this marketplace (once):
 
-A ready-to-use Claude Code skill. Give it one big idea or a list of automation candidates and get back a classified, prioritized build plan with agent vs. workflow recommendations.
-
-**Install:**
-
-```bash
-cp -r idea-breakdown ~/.claude/skills/idea-breakdown
+```
+/plugin marketplace add aistudycamp/skills
 ```
 
-That's it. Next time you open Claude Code and say something like "help me break this down" or "what should I build first," it activates automatically.
+Then install whichever skill you want:
 
----
-
-### visualization (Skill)
-
-A ready-to-use Claude Code skill that builds polished, single-file HTML visualizations - slide decks, dashboards, and diagrams. Zero dependencies, opens in any browser.
-
-It ships as a **template**: it works out of the box with a neutral theme, and you make it your own by editing two reference files.
-
-**Install:**
-
-```bash
-cp -r visualization ~/.claude/skills/visualization
+```
+/plugin install visualization@aistudycamp-skills
+/plugin install idea-breakdown@aistudycamp-skills
 ```
 
-Next time you say "make a deck," "build slides," or "visualize this," it activates automatically.
+That's it - the skill installs and activates automatically when you need it. Updates later are one command: `/plugin update`.
 
-**Customize it** so it produces *your* decks:
+## Skills
 
-- `references/design-system.md` - your colors and fonts (change this first)
-- `references/content-guidelines.md` - your writing and layout rules
-- `examples/` - drop in 1-3 of your own decks so it matches their style
+### visualization
 
-**New to skills?** Start with the **[guide](https://aistudycamp.github.io/skills/visualization-guide.html)** - a short deck on what makes a good skill and how to install and customize this one.
+Builds polished, single-file HTML slide decks, dashboards, and diagrams. Zero dependencies, opens in any browser. Activates when you say "make a deck," "build slides," or "visualize this."
 
----
+It ships as a **template** - it works out of the box with a neutral theme, and you make it yours:
 
-### skill-builder (Exercise)
+- Tell Claude your brand (colors, fonts) and it sets up the design system - or edit `design-system.md` directly
+- Show Claude a few decks you like so it matches your style
 
-An interactive 45-minute exercise where you build your first Claude Code skill from scratch. Claude walks you through everything - no prior skill-building experience needed.
+See the [guide](https://aistudycamp.github.io/skills/visualization-guide.html) for the full walkthrough.
+
+### idea-breakdown
+
+Give it one big idea or a list of automation candidates and get back a classified, prioritized build plan with agent vs. workflow recommendations. Activates when you say "help me break this down" or "what should I build first."
+
+## Exercise: skill-builder
+
+An interactive 45-minute exercise where you build your first Claude Code skill from scratch - no prior experience needed.
 
 | Module | Topic | Time | You'll Produce |
 |--------|-------|------|----------------|
@@ -55,7 +49,7 @@ An interactive 45-minute exercise where you build your first Claude Code skill f
 | 3 | Iterate & Refine | ~10 min | learnings.md + references/ added to your skill |
 | 4 | Find & Share Skills | ~10 min | A community plugin installed + knowledge of sharing skills |
 
-**Run it:**
+This one is a clone-and-run exercise, not an installable skill:
 
 ```bash
 git clone https://github.com/aistudycamp/skills.git
@@ -65,9 +59,11 @@ claude
 
 Say hello to get started.
 
----
-
 ## Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and working
-- Comfortable using a terminal (cd, ls, basic navigation)
+- For the skill-builder exercise: comfortable using a terminal (`cd`, `ls`, basic navigation)
+
+## For maintainers
+
+This repo is a plugin marketplace. Each installable skill is a plugin under `plugins/`, cataloged in `.claude-plugin/marketplace.json`. To add a skill: create `plugins/<name>/` with a `.claude-plugin/plugin.json` and `skills/<name>/SKILL.md`, then add an entry to the marketplace manifest.

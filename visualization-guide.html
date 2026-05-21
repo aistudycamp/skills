@@ -362,29 +362,26 @@
 <!-- ============ SLIDE 7 — INSTALL ============ -->
 <div class="slide" data-slide="6">
   <div class="eyebrow">Set up</div>
-  <h2>Install it — two ways</h2>
-  <p class="lead">Both put the <code>visualization</code> folder into your skills folder. Pick whichever you're comfortable with.</p>
+  <h2>Install it</h2>
+  <p class="lead">Two commands, typed straight into Claude Code. No downloads, no files to move.</p>
   <div class="spacer"></div>
-  <div class="grid-2">
-    <div class="card">
-      <span class="pill">Option A — Terminal</span>
-      <div class="spacer-sm"></div>
-      <p style="margin-bottom:12px">Clone the repo, then copy the folder in:</p>
-      <div class="code">git clone https://github.com/aistudycamp/skills.git
-cp -r skills/visualization <span class="tok">~/.claude/skills/visualization</span></div>
-    </div>
-    <div class="card">
-      <span class="pill">Option B — From GitHub</span>
-      <div class="spacer-sm"></div>
-      <div class="mini-steps">
-        <div class="mini-step">Open <strong>github.com/aistudycamp/skills</strong></div>
-        <div class="mini-step">Click the green <strong>Code</strong> button, then <strong>Download ZIP</strong></div>
-        <div class="mini-step">Unzip it and move the <strong>visualization</strong> folder into <code>~/.claude/skills/</code></div>
-      </div>
-    </div>
+  <div class="card">
+    <span class="pill">Step 1 — do this once</span>
+    <div class="spacer-sm"></div>
+    <p>Add the AI Study Camp skill library to Claude Code:</p>
+    <div class="spacer-sm"></div>
+    <div class="code"><span class="tok">/plugin marketplace add</span> aistudycamp/skills</div>
+  </div>
+  <div class="spacer-sm"></div>
+  <div class="card">
+    <span class="pill">Step 2 — install the skill</span>
+    <div class="spacer-sm"></div>
+    <p>Then install visualization:</p>
+    <div class="spacer-sm"></div>
+    <div class="code"><span class="tok">/plugin install</span> visualization@aistudycamp-skills</div>
   </div>
   <div class="spacer"></div>
-  <p class="lead" style="font-size:20px">Then just say <span class="accent-text">"make me a deck"</span> — the skill activates on its own.</p>
+  <p class="lead" style="font-size:20px">That's it — installed. Say <span class="accent-text">"make me a deck"</span> and it activates on its own.</p>
 </div>
 
 <!-- ============ SLIDE 8 — MAKE IT YOURS ============ -->
@@ -431,9 +428,9 @@ cp -r skills/visualization <span class="tok">~/.claude/skills/visualization</spa
   <div class="eyebrow" style="color:var(--accent-light)">[ ai study camp ]</div>
   <h2>Quick install</h2>
   <div class="checklist">
-    <div class="check-item"><span class="check-num">1</span> Install the <strong>visualization</strong> folder</div>
+    <div class="check-item"><span class="check-num">1</span> Install it with two <strong>/plugin</strong> commands</div>
     <div class="check-item"><span class="check-num">2</span> Set your <strong>design system</strong></div>
-    <div class="check-item"><span class="check-num">3</span> Drop a few decks into <strong>examples/</strong></div>
+    <div class="check-item"><span class="check-num">3</span> Show Claude a few <strong>decks you like</strong></div>
     <div class="check-item"><span class="check-num">4</span> Ask Claude for your <strong>first one</strong></div>
   </div>
 </div>

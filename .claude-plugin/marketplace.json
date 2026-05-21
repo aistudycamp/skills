@@ -1,0 +1,19 @@
+{
+  "name": "aistudycamp-skills",
+  "owner": {
+    "name": "AI Study Camp"
+  },
+  "description": "Installable Claude Code skills for AI Study Camp students.",
+  "plugins": [
+    {
+      "name": "visualization",
+      "source": "./plugins/visualization",
+      "description": "Build polished single-file HTML slide decks, dashboards, and diagrams. Ships as a customizable template."
+    },
+    {
+      "name": "idea-breakdown",
+      "source": "./plugins/idea-breakdown",
+      "description": "Turn one big idea or a list of automation ideas into a prioritized, classified build plan."
+    }
+  ]
+}

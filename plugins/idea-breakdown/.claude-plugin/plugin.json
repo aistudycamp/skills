@@ -1,0 +1,12 @@
+{
+  "name": "idea-breakdown",
+  "description": "Turn one big idea or a list of automation ideas into a prioritized, classified build plan.",
+  "version": "1.0.0",
+  "author": {
+    "name": "AI Study Camp"
+  },
+  "homepage": "https://github.com/aistudycamp/skills",
+  "license": "MIT",
+  "keywords": ["ideas", "planning", "automation", "prioritization"],
+  "skills": "./skills"
+}
