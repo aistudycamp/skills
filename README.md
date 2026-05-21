@@ -2,6 +2,8 @@
 
 Installable skills and exercises for [AI Study Camp](https://aistudycamp.com) students.
 
+> **New to skills?** Start with the **[Visualization Skill guide](https://aistudycamp.github.io/skills/visualization-guide.html)** - a short deck on what makes a good skill, plus how to install and customize the visualization skill.
+
 ## What's in this repo
 
 ### idea-breakdown (Skill)
@@ -36,9 +38,9 @@ Next time you say "make a deck," "build slides," or "visualize this," it activat
 
 - `references/design-system.md` - your colors and fonts (change this first)
 - `references/content-guidelines.md` - your writing and layout rules
-- `examples/` - create this folder and drop in 1-3 of your own decks to match their style
+- `examples/` - drop in 1-3 of your own decks so it matches their style
 
-**New to skills?** Open `visualization-guide.html` in your browser first - a short deck on what makes a good skill and how to install and customize this one.
+**New to skills?** Start with the **[guide](https://aistudycamp.github.io/skills/visualization-guide.html)** - a short deck on what makes a good skill and how to install and customize this one.
 
 ---
 

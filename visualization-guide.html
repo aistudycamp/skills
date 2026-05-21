@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Visualization Skill — Getting Started</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: #F5F0EB;
+    --foreground: #1C1917;
+    --surface: #FFFFFF;
+    --accent: #0D9488;
+    --accent-light: #14B8A6;
+    --text-secondary: #78716C;
+    --dark: #1C1917;
+    --border: rgba(28,25,23,0.1);
+    --teal-bg: rgba(13,148,136,0.1);
+    --teal-border: rgba(13,148,136,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--background);
+    font-family: 'Geist', -apple-system, sans-serif;
+    color: var(--foreground);
+  }
+
+  /* ---- Progress bar ---- */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 4px; z-index: 100;
+    background: var(--accent);
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ---- Slides ---- */
+  .slide {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 70px 100px 96px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    transform: translateX(34px);
+  }
+  .slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+  .slide.exiting { opacity: 0; transform: translateX(-34px); }
+
+  /* ---- Dark slides (title + close) ---- */
+  .slide.dark { background: var(--dark); color: var(--background); }
+  .slide.dark h2 { color: var(--background); }
+
+  /* ---- Checklist (close slide) ---- */
+  .checklist { display: flex; flex-direction: column; gap: 22px; margin-top: 6px; }
+  .check-item {
+    display: flex; align-items: center; gap: 22px;
+    font-size: 27px; font-weight: 500; color: var(--background);
+  }
+  .check-item strong { color: var(--accent-light); font-weight: 600; }
+  .check-num {
+    flex-shrink: 0; width: 50px; height: 50px; border-radius: 50%;
+    background: rgba(20,184,166,0.14); border: 1.5px solid var(--accent-light);
+    color: var(--accent-light); font-family: 'Geist Mono', monospace;
+    font-weight: 600; font-size: 21px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ---- Wordmark ---- */
+  .wordmark {
+    position: fixed; bottom: 30px; left: 100px; z-index: 60;
+    font-family: 'Geist', sans-serif; font-weight: 600; font-size: 15px;
+    letter-spacing: 0.5px; color: var(--accent);
+    transition: opacity 0.4s ease;
+  }
+
+  /* ---- Typography ---- */
+  .eyebrow {
+    font-family: 'Geist', sans-serif;
+    font-size: 15px; font-weight: 600; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 22px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: 76px; line-height: 1.06; letter-spacing: -1px;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: 50px; line-height: 1.12; letter-spacing: -0.5px;
+    margin-bottom: 28px;
+  }
+  .lead {
+    font-size: 24px; line-height: 1.55; color: var(--text-secondary);
+    max-width: 900px;
+  }
+  .slide.dark .lead { color: #a8a29e; }
+  .accent-text { color: var(--accent); font-style: italic; }
+  .slide.dark .accent-text { color: var(--accent-light); }
+
+  /* ---- Cards ---- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.6rem; padding: 30px 32px;
+  }
+  .card h3 {
+    font-family: 'Geist', sans-serif; font-weight: 600; font-size: 22px;
+    margin-bottom: 10px;
+  }
+  .card p { font-size: 18px; line-height: 1.58; color: var(--text-secondary); }
+  .card p strong { color: var(--foreground); font-weight: 600; }
+  .card p em { color: var(--accent); font-style: italic; }
+  .card .num {
+    font-family: 'Geist Mono', monospace; font-size: 15px; font-weight: 600;
+    color: var(--accent); margin-bottom: 14px; display: block;
+  }
+  .card code, .lead code {
+    font-family: 'Geist Mono', monospace; font-size: 0.86em;
+    background: var(--teal-bg); color: var(--accent);
+    padding: 2px 7px; border-radius: 5px;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+
+  /* ---- Pills ---- */
+  .pill {
+    display: inline-block; padding: 6px 15px; border-radius: 9999px;
+    background: var(--teal-bg); color: var(--accent);
+    border: 1px solid var(--teal-border);
+    font-size: 14px; font-weight: 600; font-family: 'Geist', sans-serif;
+  }
+
+  /* ---- Flow ---- */
+  .flow { display: flex; align-items: center; gap: 0; margin-top: 14px; flex-wrap: wrap; }
+  .flow-node {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.6rem; padding: 18px 24px; font-size: 17px; font-weight: 500;
+  }
+  .flow-node.accent {
+    background: var(--teal-bg); border-color: var(--teal-border);
+    color: var(--accent); font-weight: 600;
+  }
+  .flow-arrow {
+    width: 40px; height: 2px; background: var(--accent); flex-shrink: 0;
+    position: relative;
+  }
+  .flow-arrow::after {
+    content: ''; position: absolute; right: -1px; top: -5px;
+    border: 6px solid transparent; border-left: 8px solid var(--accent);
+  }
+
+  /* ---- Compare cards ---- */
+  .compare-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 0.6rem; padding: 28px 30px; position: relative; overflow: hidden;
+  }
+  .compare-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  }
+  .compare-card.bad::before { background: #d97757; }
+  .compare-card.good::before { background: var(--accent); }
+  .compare-label {
+    font-family: 'Geist Mono', monospace; font-size: 13px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px;
+  }
+  .compare-card.bad .compare-label { color: #d97757; }
+  .compare-card.good .compare-label { color: var(--accent); }
+  .compare-card .quote {
+    font-size: 19px; line-height: 1.5; font-family: 'Geist Mono', monospace;
+    color: var(--foreground);
+  }
+  .compare-card .why { font-size: 16px; color: var(--text-secondary); margin-top: 14px; }
+
+  /* ---- Folder tree ---- */
+  .tree {
+    background: var(--dark); border-radius: 0.6rem; padding: 34px 42px;
+    font-family: 'Geist Mono', monospace;
+  }
+  .t-line { display: flex; align-items: baseline; padding: 7px 0; }
+  .t-l1 { padding-left: 36px; }
+  .t-l2 { padding-left: 72px; }
+  .t-name {
+    font-size: 19px; min-width: 252px;
+  }
+  .t-l1 .t-name { min-width: 216px; }
+  .t-l2 .t-name { min-width: 252px; }
+  .t-folder .t-name, .t-line.folder .t-name { color: var(--accent-light); font-weight: 600; }
+  .t-file { color: #e7e5e4; }
+  .t-note { color: #78716C; font-size: 15px; }
+
+  /* ---- Code blocks ---- */
+  .code {
+    background: var(--dark); color: #e7e5e4; border-radius: 0.5rem;
+    padding: 16px 22px; font-family: 'Geist Mono', monospace; font-size: 16px;
+    line-height: 1.8; white-space: pre; overflow-x: auto;
+  }
+  .code .tok { color: var(--accent-light); }
+
+  /* ---- Numbered steps inside cards ---- */
+  .mini-steps { counter-reset: ms; }
+  .mini-step {
+    display: flex; gap: 14px; align-items: baseline;
+    font-size: 18px; line-height: 1.5; color: var(--text-secondary);
+    padding: 7px 0;
+  }
+  .mini-step strong { color: var(--foreground); font-weight: 600; }
+  .mini-step::before {
+    counter-increment: ms; content: counter(ms);
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--teal-bg); color: var(--accent);
+    font-family: 'Geist Mono', monospace; font-weight: 600; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    align-self: flex-start;
+  }
+
+  .spacer-sm { height: 14px; }
+  .spacer { height: 26px; }
+
+  /* ---- Nav footer ---- */
+  .nav-footer {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 100px;
+  }
+  .nav-dots { display: flex; gap: 7px; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(28,25,23,0.18); cursor: pointer; transition: all 0.3s;
+  }
+  .dot.active { background: var(--accent); width: 26px; border-radius: 4px; }
+  .slide-count {
+    font-family: 'Geist Mono', monospace; font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .nav-hint {
+    font-family: 'Geist', sans-serif; font-size: 13px; color: var(--text-secondary);
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- ============ SLIDE 1 — TITLE ============ -->
+<div class="slide dark active" data-slide="0">
+  <div class="eyebrow" style="color:var(--accent-light)">[ ai study camp ]</div>
+  <h1>The Visualization<br>Skill</h1>
+  <div class="spacer"></div>
+  <p class="lead">Build polished slides, dashboards, and diagrams with Claude — and learn what makes a skill worth downloading, customizing, and sharing.</p>
+</div>
+
+<!-- ============ SLIDE 2 — WHAT IS A SKILL ============ -->
+<div class="slide" data-slide="1">
+  <div class="eyebrow">Start here</div>
+  <h2>What is a skill?</h2>
+  <p class="lead">A skill is a folder Claude reads <span class="accent-text">automatically</span> when your request matches it. Think of it as a recipe card for a task you do often — you write the instructions once, and Claude follows them every time.</p>
+  <div class="spacer"></div>
+  <div class="flow">
+    <div class="flow-node">You say "make me a deck"</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node accent">Claude loads the skill</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node">Polished HTML, your way</div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 3 — FOUR MARKS ============ -->
+<div class="slide" data-slide="2">
+  <div class="eyebrow">What makes a good skill</div>
+  <h2>Four marks of a skill worth keeping</h2>
+  <div class="grid-2">
+    <div class="card">
+      <span class="num">01</span>
+      <h3>A sharp description</h3>
+      <p>Claude reads it to decide when to run the skill. Vague description — the skill never fires.</p>
+    </div>
+    <div class="card">
+      <span class="num">02</span>
+      <h3>One clear job</h3>
+      <p>A skill that does one thing well beats one that tries to do everything. Narrow wins.</p>
+    </div>
+    <div class="card">
+      <span class="num">03</span>
+      <h3>Reference files</h3>
+      <p>Your style, your rules, your examples — kept in files the skill loads only when needed.</p>
+    </div>
+    <div class="card">
+      <span class="num">04</span>
+      <h3>It improves</h3>
+      <p>A <code>learnings.md</code> file captures what you correct, so the skill gets better with use.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 4 — THE DESCRIPTION ============ -->
+<div class="slide" data-slide="3">
+  <div class="eyebrow">What makes a good skill</div>
+  <h2>The description is the trigger</h2>
+  <p class="lead">It is not a summary for humans. It is how Claude decides to reach for the skill — so name the exact things a user would say.</p>
+  <div class="spacer"></div>
+  <div class="grid-2">
+    <div class="compare-card bad">
+      <div class="compare-label">Too vague</div>
+      <div class="quote">"Helps with slides."</div>
+      <div class="why">Claude can't tell when this applies. The skill sits there and never fires.</div>
+    </div>
+    <div class="compare-card good">
+      <div class="compare-label">Sharp</div>
+      <div class="quote">"Use when the user says 'make a deck', 'build slides', 'visualize this'…"</div>
+      <div class="why">Names real trigger phrases. Claude knows exactly when to load it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 5 — A SKILL IS A FOLDER ============ -->
+<div class="slide" data-slide="4">
+  <div class="eyebrow">What makes a good skill</div>
+  <h2>A skill is a folder, not a file</h2>
+  <p class="lead">The power isn't just instructions — it's the supporting files Claude pulls in when it needs them. Here's the visualization skill's folder:</p>
+  <div class="spacer"></div>
+  <div class="tree">
+    <div class="t-line folder"><span class="t-name">visualization/</span></div>
+    <div class="t-line t-l1"><span class="t-name t-file">SKILL.md</span><span class="t-note">the playbook Claude follows + the trigger</span></div>
+    <div class="t-line t-l1"><span class="t-name t-file">learnings.md</span><span class="t-note">notes that build up as you use it</span></div>
+    <div class="t-line t-l1 folder"><span class="t-name">references/</span></div>
+    <div class="t-line t-l2"><span class="t-name t-file">design-system.md</span><span class="t-note">your colors &amp; fonts</span></div>
+    <div class="t-line t-l2"><span class="t-name t-file">content-guidelines.md</span><span class="t-note">your writing rules</span></div>
+    <div class="t-line t-l2"><span class="t-name t-file">design-patterns.md</span><span class="t-note">ready-made components</span></div>
+    <div class="t-line t-l1 folder"><span class="t-name">examples/</span><span class="t-note">your own decks — the skill matches their style</span></div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 6 — MEET THE SKILL ============ -->
+<div class="slide" data-slide="5">
+  <div class="eyebrow">The skill</div>
+  <h2>Meet the visualization skill</h2>
+  <p class="lead">You've just seen what makes a skill good. <span class="accent-text">This one is built exactly that way</span> — and it's ready for you to download and use. It turns a request into a polished, single-file HTML artifact, in any of three formats:</p>
+  <div class="spacer"></div>
+  <div class="grid-3">
+    <div class="card">
+      <span class="pill">Slides</span>
+      <div class="spacer-sm"></div>
+      <p>Presentations and training decks. Arrow-key navigation, progress bar, speaker notes.</p>
+    </div>
+    <div class="card">
+      <span class="pill">Dashboard</span>
+      <div class="spacer-sm"></div>
+      <p>Tabbed, multi-view reference. For exploring something at your own pace.</p>
+    </div>
+    <div class="card">
+      <span class="pill">Diagram</span>
+      <div class="spacer-sm"></div>
+      <p>One page, one concept. A flow, a comparison, an explanation.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 7 — INSTALL ============ -->
+<div class="slide" data-slide="6">
+  <div class="eyebrow">Set up</div>
+  <h2>Install it — two ways</h2>
+  <p class="lead">Both put the <code>visualization</code> folder into your skills folder. Pick whichever you're comfortable with.</p>
+  <div class="spacer"></div>
+  <div class="grid-2">
+    <div class="card">
+      <span class="pill">Option A — Terminal</span>
+      <div class="spacer-sm"></div>
+      <p style="margin-bottom:12px">Clone the repo, then copy the folder in:</p>
+      <div class="code">git clone https://github.com/aistudycamp/skills.git
+cp -r skills/visualization <span class="tok">~/.claude/skills/visualization</span></div>
+    </div>
+    <div class="card">
+      <span class="pill">Option B — From GitHub</span>
+      <div class="spacer-sm"></div>
+      <div class="mini-steps">
+        <div class="mini-step">Open <strong>github.com/aistudycamp/skills</strong></div>
+        <div class="mini-step">Click the green <strong>Code</strong> button, then <strong>Download ZIP</strong></div>
+        <div class="mini-step">Unzip it and move the <strong>visualization</strong> folder into <code>~/.claude/skills/</code></div>
+      </div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <p class="lead" style="font-size:20px">Then just say <span class="accent-text">"make me a deck"</span> — the skill activates on its own.</p>
+</div>
+
+<!-- ============ SLIDE 8 — MAKE IT YOURS ============ -->
+<div class="slide" data-slide="7">
+  <div class="eyebrow">Customize</div>
+  <h2>Make it yours</h2>
+  <p class="lead">It works right away with a neutral theme. To make it produce <span class="accent-text">your</span> decks, set up your design system — two ways:</p>
+  <div class="spacer"></div>
+  <div class="grid-2">
+    <div class="card">
+      <span class="pill">Let Claude do it</span>
+      <div class="spacer-sm"></div>
+      <p>Point it at a few decks you like, or paste your colors. It writes <code>design-system.md</code> for you.</p>
+    </div>
+    <div class="card">
+      <span class="pill">Hands-on</span>
+      <div class="spacer-sm"></div>
+      <p>Edit <code>references/design-system.md</code> yourself — a filled-in example is right there to copy.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 9 — USE IT ============ -->
+<div class="slide" data-slide="8">
+  <div class="eyebrow">Run it</div>
+  <h2>Use it — and watch it learn</h2>
+  <p class="lead">Just ask. Say <span class="accent-text">"make a deck about X"</span> or <span class="accent-text">"visualize this"</span> — the skill reads your design system, follows your style, and builds the HTML.</p>
+  <div class="spacer"></div>
+  <div class="flow">
+    <div class="flow-node">You ask</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node accent">It builds it your way</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node">You correct something</div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node accent">It remembers — learnings.md</div>
+  </div>
+  <div class="spacer"></div>
+  <p class="lead" style="font-size:20px">Every correction makes the next deck closer to what you wanted.</p>
+</div>
+
+<!-- ============ SLIDE 10 — CLOSE ============ -->
+<div class="slide dark" data-slide="9">
+  <div class="eyebrow" style="color:var(--accent-light)">[ ai study camp ]</div>
+  <h2>Quick install</h2>
+  <div class="checklist">
+    <div class="check-item"><span class="check-num">1</span> Install the <strong>visualization</strong> folder</div>
+    <div class="check-item"><span class="check-num">2</span> Set your <strong>design system</strong></div>
+    <div class="check-item"><span class="check-num">3</span> Drop a few decks into <strong>examples/</strong></div>
+    <div class="check-item"><span class="check-num">4</span> Ask Claude for your <strong>first one</strong></div>
+  </div>
+</div>
+
+<div class="wordmark">[ ai study camp ]</div>
+
+<div class="nav-footer">
+  <div class="nav-hint">&#8592; &#8594; to navigate</div>
+  <div class="nav-dots" id="navDots"></div>
+  <div class="slide-count" id="slideCount"></div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const progressBar = document.getElementById('progressBar');
+  const slideCount = document.getElementById('slideCount');
+  const navDots = document.getElementById('navDots');
+  const wordmark = document.querySelector('.wordmark');
+  let current = 0;
+  const total = slides.length;
+
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    navDots.appendChild(dot);
+  }
+
+  function updateUI() {
+    progressBar.style.width = ((current + 1) / total * 100) + '%';
+    slideCount.textContent = String(current + 1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.className = 'dot' + (i === current ? ' active' : '');
+    });
+    // AISC convention: wordmark on content slides only, hidden on dark title/close slides
+    wordmark.style.opacity = slides[current].classList.contains('dark') ? '0' : '1';
+  }
+
+  function goTo(index) {
+    if (index < 0 || index >= total || index === current) return;
+    const prev = current;
+    slides[prev].classList.remove('active');
+    slides[prev].classList.add('exiting');
+    current = index;
+    slides[current].classList.add('active');
+    setTimeout(() => slides[prev].classList.remove('exiting'), 450);
+    updateUI();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+  });
+
+  updateUI();
+</script>
+</body>
+</html>
