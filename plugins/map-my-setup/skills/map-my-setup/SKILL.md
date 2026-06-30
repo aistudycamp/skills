@@ -18,7 +18,7 @@ The script finds WHAT exists and flags problems deterministically. Claude adds t
    python3 scripts/scan.py [root ...] --html OUTPUT.html [--recs recs.json] [--desc desc.json]
    ```
    - It is read-only. It inspects the given roots (default: current dir) and always folds in `~/.claude` for global config. **Pass the roots that hold the user's real work** - e.g. `python3 scripts/scan.py ~/cc ~/cacti --html map.html`. If `/mcp` showed servers the scan missed, add the folder that holds that `.mcp.json` as a root.
-   - The script prints a SUMMARY and a `===== JSON =====` block, and (with `--html`) writes a self-contained dashboard (d3 + data inlined, opens offline).
+   - The script prints a SUMMARY and a `===== JSON =====` block, and (with `--html`) writes a self-contained dashboard (d3 + data inlined, opens offline) and **auto-opens it in the user's default browser**. Pass `--no-open` to suppress that (headless/CI).
 
 2. **Read the SUMMARY and the JSON.** Note the bloated CLAUDE.mds (ranked by impact, see below), the version-control gaps, and the inventory. The folder map, findings, and inventory tabs are populated automatically from the JSON - you do not hand-build them.
 
@@ -26,7 +26,7 @@ The script finds WHAT exists and flags problems deterministically. Claude adds t
 
 4. **Write the recommendations - this is the judgment step (`--recs recs.json`).** Read the flagged CLAUDE.mds and the folder shape, then write concrete, prioritized actions. Schema: a JSON array of `{ "title", "severity": "high"|"med"|"low", "why", "action", "paths": [] }`. **Order by IMPACT, not raw line count** (see the priority rule below). Then re-run step 1 with `--recs recs.json` (and `--desc`) to bake them into the dashboard.
 
-5. **Tell the user where the file is** and what the top recommendation is. Offer to commit it so the map itself is saved.
+5. **The dashboard opens in the browser automatically.** Tell the user where the file is and what the top recommendation is. If the auto-open did not fire (rare), give them the path to open. Offer to commit it so the map itself is saved.
 
 ## How to judge impact (the priority rule)
 

@@ -283,12 +283,13 @@ def find_mcp_files(roots):
 # --------------------------- drive ---------------------------
 # flags: --html PATH (write single-file dashboard) · --desc PATH (json overrides) · --recs PATH (json recs)
 argv = sys.argv[1:]
-html_out, desc_path, recs_path, positional = None, None, None, []
+html_out, desc_path, recs_path, positional, no_open = None, None, None, [], False
 i = 0
 while i < len(argv):
     if argv[i] == "--html" and i + 1 < len(argv): html_out = argv[i+1]; i += 2
     elif argv[i] == "--desc" and i + 1 < len(argv): desc_path = argv[i+1]; i += 2
     elif argv[i] == "--recs" and i + 1 < len(argv): recs_path = argv[i+1]; i += 2
+    elif argv[i] == "--no-open": no_open = True; i += 1   # suppress auto-open (headless/CI)
     else: positional.append(argv[i]); i += 1
 roots = [Path(a).expanduser().resolve() for a in positional if Path(a).expanduser().exists()] or [CWD.resolve()]
 seen, ws = set(), []
@@ -394,4 +395,14 @@ if html_out:
                .replace("{{RECOMMENDATIONS}}", recommendations))
     outp = Path(html_out).expanduser()
     outp.write_text(html)
-    print(f"\nWrote dashboard: {tilde(outp)}  ({len(html)//1024} KB, self-contained — opens offline)")
+    print(f"\nWrote dashboard: {tilde(outp)}  ({len(html)//1024} KB, self-contained - opens offline)")
+    if not no_open:
+        try:
+            import platform
+            sysname = platform.system()
+            if sysname == "Darwin": subprocess.run(["open", str(outp)], check=False)
+            elif sysname == "Windows": os.startfile(str(outp))  # type: ignore[attr-defined]
+            else: subprocess.run(["xdg-open", str(outp)], check=False)
+            print("Opened it in your default browser.")
+        except Exception:
+            print("(Could not auto-open - open the file path above in your browser.)")
