@@ -14,6 +14,11 @@
       "name": "idea-breakdown",
       "source": "./plugins/idea-breakdown",
       "description": "Turn one big idea or a list of automation ideas into a prioritized, classified build plan."
+    },
+    {
+      "name": "map-my-setup",
+      "source": "./plugins/map-my-setup",
+      "description": "Audit a Claude Code setup and produce a shareable single-file HTML dashboard - every CLAUDE.md, skill, agent, command, hook, and MCP server, flagged for bloat and version-control gaps, with an interactive folder map and prioritized recommendations."
     }
   ]
 }
