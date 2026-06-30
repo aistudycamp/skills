@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
-  Claude Code Setup Audit — single-file dashboard (AISC cream design system).
+  Claude Code Setup Audit - single-file dashboard (AISC cream design system).
   HOW TO USE: copy this file to `claude-system-map.html`, run scripts/scan.py, and paste
   the JSON from its `===== JSON =====` block into the `const DATA = {{DATA_JSON}}` line below.
-  Everything (findings, map, inventory) renders from that one blob — no hand-editing rows.
+  Everything (findings, map, inventory) renders from that one blob - no hand-editing rows.
   OPTIONAL: fill DESCRIPTIONS with one-line plain-English summaries keyed by skill/agent/command
   name so the inventory reads well. Leave it `{}` if you haven't enriched yet.
 -->
@@ -79,10 +79,10 @@ tr:last-child td{border-bottom:none}
 .rec .paths code{background:var(--surface2);padding:3px 8px;border-radius:5px}
 footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)}
 
-/* =================== FOLDER-VIEW (3-mode map) — namespaced =================== */
+/* =================== FOLDER-VIEW (3-mode map) - namespaced =================== */
 .mono{font-family:'JetBrains Mono',monospace}
 
-/* segmented control — restyled for the dashboard's cream surface */
+/* segmented control - restyled for the dashboard's cream surface */
 .segmented{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:4px;gap:3px}
 .seg-btn{font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;color:var(--text2);background:transparent;border:0;cursor:pointer;padding:7px 18px;border-radius:7px;transition:all .15s ease;letter-spacing:.01em}
 .seg-btn:hover{color:var(--text)}
@@ -209,7 +209,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);font-
       <section class="view active" id="view-icicle">
         <div class="view-hint">
           <span class="crumbs" id="ic-crumbs"></span>
-          <span style="color:var(--gray)">— click a segment to zoom, root to reset</span>
+          <span style="color:var(--gray)">- click a segment to zoom, root to reset</span>
         </div>
         <div class="fv-card" id="ic-card"><svg id="ic-svg"></svg></div>
       </section>
@@ -217,7 +217,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);font-
       <section class="view" id="view-sunburst">
         <div class="view-hint">
           <span class="crumbs" id="sb-crumbs"></span>
-          <span style="color:var(--gray)">— click an arc to zoom in, center to go up</span>
+          <span style="color:var(--gray)">- click an arc to zoom in, center to go up</span>
         </div>
         <div class="fv-card" id="sb-card" style="display:flex;justify-content:center"><svg id="sb-svg"></svg></div>
       </section>
@@ -225,7 +225,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);font-
       <section class="view" id="view-columns">
         <div class="view-hint">
           <span class="crumbs" id="cl-crumbs"></span>
-          <span style="color:var(--gray)">— Finder-style: click a folder to drill right</span>
+          <span style="color:var(--gray)">- Finder-style: click a folder to drill right</span>
         </div>
         <div class="fv-card" style="overflow:hidden"><div class="miller-wrap" id="miller"></div></div>
       </section>
@@ -239,8 +239,8 @@ footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);font-
 <script>
 // ============================ DATA (filled by scan.py --html) ============================
 const DATA = {{DATA_JSON}};
-const DESCRIPTIONS = {{DESCRIPTIONS}};       // optional name->one-liner overrides — else {}
-const RECOMMENDATIONS = {{RECOMMENDATIONS}}; // [{title,severity,why,action,paths:[]}] — else []
+const DESCRIPTIONS = {{DESCRIPTIONS}};       // optional name->one-liner overrides - else {}
+const RECOMMENDATIONS = {{RECOMMENDATIONS}}; // [{title,severity,why,action,paths:[]}] - else []
 // =======================================================================================
 
 const $ = (id)=>document.getElementById(id);
@@ -251,7 +251,7 @@ const descCell = (n,d) => { const t = DESCRIPTIONS[n] || d || ''; return t
 function healthColor(lines){ if(!lines) return '#A8A29E'; if(lines>300) return '#DC2626'; if(lines>200) return '#D97706'; return '#16A34A'; }
 
 // ---- header ----
-$('title').textContent = (DATA.workspace||[]).join(' + ') + ' — setup audit';
+$('title').textContent = (DATA.workspace||[]).join(' + ') + ' - setup audit';
 $('subtitle').textContent = `host ${DATA.hostname} · ${DATA.totals.meaningful_folders} folders with context/config · ${DATA.totals.claudemd_files} CLAUDE.md files · scanned ${DATA.totals.dirs_scanned} dirs`;
 
 // ---- tabs (default to Recommendations if present, else Findings) ----
@@ -270,9 +270,9 @@ showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
   let h=`<h2>What to change</h2>`;
   if(!recs.length){
     h+=`<p class="lead">No recommendations were written into this report yet. This is the part Claude fills in: it reads the flagged CLAUDE.mds and folder shape from the Findings tab and writes what to trim, merge, or add. Re-run the audit through Claude (the <code>map-my-setup</code> skill) to generate them.</p>
-    <div class="card blue"><h3>How to generate these</h3><p class="pt">Ask Claude: <i>"map my setup and write the recommendations."</i> It will read the flagged files and produce concrete, do-this actions here — trimming bloated context, consolidating repeated CLAUDE.mds, and adding missing ones.</p></div>`;
+    <div class="card blue"><h3>How to generate these</h3><p class="pt">Ask Claude: <i>"map my setup and write the recommendations."</i> It will read the flagged files and produce concrete, do-this actions here - trimming bloated context, consolidating repeated CLAUDE.mds, and adding missing ones.</p></div>`;
   } else {
-    h+=`<p class="lead">Concrete changes, highest-impact first. Each one is written to be acted on — by you or by Claude.</p>`;
+    h+=`<p class="lead">Concrete changes, highest-impact first. Each one is written to be acted on - by you or by Claude.</p>`;
     recs.forEach(r=>{
       const sev=(r.severity||'med');
       h+=`<div class="rec ${sev}"><div class="rh"><span class="sev ${sev}">${esc(sev)}</span><h3>${esc(r.title||'')}</h3></div>`;
@@ -292,7 +292,7 @@ showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
   const barW = l => Math.min(180, Math.round(l/587*180));
   let h = `
    <h2>What the audit found</h2>
-   <p class="lead">Read top to bottom. These are the things worth acting on — bloated context first, gaps and backup risk after.</p>
+   <p class="lead">Read top to bottom. These are the things worth acting on - bloated context first, gaps and backup risk after.</p>
    <div class="stats">
      <div class="stat"><div class="n">${T.claudemd_files}</div><div class="l">CLAUDE.md files</div></div>
      <div class="stat ${T.bloated?'warn':''}"><div class="n">${T.bloated}</div><div class="l">Bloated (&gt;300 lines)</div></div>
@@ -302,7 +302,7 @@ showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
 
   // bloated
   h += `<div class="card red"><h3>Bloated context <span class="pill red">${F.bloated_claudemds.length} flagged</span></h3>
-    <p class="pt">A CLAUDE.md is loaded into the model on <b>every turn</b> you work in that folder. Long ones quietly eat the context window. >300 lines is likely too much; 200&ndash;300 is worth a trim. Lengths are guidance, not law — you judge whether the content earns its size.</p>`;
+    <p class="pt">A CLAUDE.md is loaded into the model on <b>every turn</b> you work in that folder. Long ones quietly eat the context window. >300 lines is likely too much; 200&ndash;300 is worth a trim. Lengths are guidance, not law - you judge whether the content earns its size.</p>`;
   if(F.bloated_claudemds.length){
     h += `<table><thead><tr><th>Folder</th><th>Path</th><th>Lines</th></tr></thead><tbody>`;
     F.bloated_claudemds.forEach(b=>{
@@ -316,7 +316,7 @@ showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
 
   // missing
   h += `<div class="card orange"><h3>Warrants a CLAUDE.md <span class="pill orange">${F.missing_claudemd.length}</span></h3>
-    <p class="pt">Git repos with no CLAUDE.md — Claude works in them with no project steer. Umbrella folders (like <code>cc/</code>) don't need one; these are real projects that do.</p>`;
+    <p class="pt">Git repos with no CLAUDE.md - Claude works in them with no project steer. Umbrella folders (like <code>cc/</code>) don't need one; these are real projects that do.</p>`;
   if(F.missing_claudemd.length){
     h += `<table><thead><tr><th>Project</th><th>Path</th><th>Why</th></tr></thead><tbody>`;
     F.missing_claudemd.forEach(m=> h += `<tr><td><b>${esc(m.name)}</b></td><td class="path">${esc(m.path)}</td><td class="path" style="text-align:right">${esc(m.why)}</td></tr>`);
@@ -326,7 +326,7 @@ showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
 
   // backup
   h += `<div class="card blue"><h3>Backup gaps <span class="pill">${F.backup_gaps.length}</span></h3>
-    <p class="pt">Folders with context/config that live in no git remote — lost if this machine died.</p>`;
+    <p class="pt">Folders with context/config that live in no git remote - lost if this machine died.</p>`;
   if(F.backup_gaps.length){
     h += `<table><thead><tr><th>Folder</th><th>Path</th><th>Status</th></tr></thead><tbody>`;
     F.backup_gaps.forEach(n=> h += `<tr><td><b>${esc(n.name)}</b></td><td class="path">${esc(n.path)}</td><td><span class="b risk">${esc(n.why)}</span></td></tr>`);
@@ -362,10 +362,10 @@ showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
      : `<tr><td colspan="4" class="empty">none</td></tr>`;
 
   let h = `<h2>Inventory</h2>
-   <p class="lead">Everything installed, what it does, and where it works — <span class="b global">global</span> (every project) vs <span class="b scoped">folder-scoped</span> (only inside one folder). In Claude Code a <b>skill is invoked as its own <code>/slash-command</code></b>, so skills and commands are reconciled into one list below rather than counted twice. Global config lives in <code>${esc(G.global_dir)}</code> — CLAUDE.md ${G.global_claudemd_lines} lines, ${esc(G.global_backup)}.</p>
+   <p class="lead">Everything installed, what it does, and where it works - <span class="b global">global</span> (every project) vs <span class="b scoped">folder-scoped</span> (only inside one folder). In Claude Code a <b>skill is invoked as its own <code>/slash-command</code></b>, so skills and commands are reconciled into one list below rather than counted twice. Global config lives in <code>${esc(G.global_dir)}</code> - CLAUDE.md ${G.global_claudemd_lines} lines, ${esc(G.global_backup)}.</p>
 
    <div class="card"><h3>Skills &amp; commands <span class="pill">${G.skills.length} global skills · ${fskills.length} folder-scoped · ${cmdOnly.length} command-only</span></h3>
-     <p class="pt">${G.commands.length-cmdOnly.length} of your ${G.commands.length} command files are skills surfaced as <code>/commands</code> — shown once, tagged <b>skill</b>. Folder-scoped skills only load when you're working inside that folder.</p>
+     <p class="pt">${G.commands.length-cmdOnly.length} of your ${G.commands.length} command files are skills surfaced as <code>/commands</code> - shown once, tagged <b>skill</b>. Folder-scoped skills only load when you're working inside that folder.</p>
      <table><thead><tr><th>Name</th><th>What it does</th><th>Type</th><th>Scope</th></tr></thead><tbody>${invRows}</tbody></table></div>
 
    <div class="card"><h3>Agents <span class="pill">${G.agents.length} global</span></h3>
@@ -381,7 +381,7 @@ showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
 
   // MCP
   h += `<div class="card"><h3>MCP servers</h3>
-    <p class="pt">Where a server is configured decides where it's available. Managed claude.ai connectors (Gmail, Calendar, Slack…) aren't in any file — run <code>/mcp</code> to list those.</p>
+    <p class="pt">Where a server is configured decides where it's available. Managed claude.ai connectors (Gmail, Calendar, Slack…) aren't in any file - run <code>/mcp</code> to list those.</p>
     <table><thead><tr><th>Server(s)</th><th>Source</th><th>Scope</th><th>Backed up?</th></tr></thead><tbody>`;
   let any=false;
   if(M.user_scope.length){any=true; h+=`<tr><td><b>${M.user_scope.map(esc).join(', ')}</b></td><td class="path">~/.claude.json (user)</td><td><span class="b global">global</span></td><td>&mdash;</td></tr>`;}
@@ -389,13 +389,13 @@ showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
     h+=`<tr><td><b>${f.servers.map(esc).join(', ')}</b></td><td class="path">${esc(f.file)}</td><td><span class="b scoped">${esc(f.scope)}</span></td><td>${bk}</td></tr>`;});
   (M.per_project||[]).forEach(p=>{any=true; h+=`<tr><td><b>${p.servers.map(esc).join(', ')}</b></td><td class="path">${esc(p.folder)} (per-project)</td><td><span class="b scoped">folder only</span></td><td>&mdash;</td></tr>`;});
   if(M.plugins.length){any=true; h+=`<tr><td><b>${M.plugins.map(esc).join(', ')}</b></td><td class="path">installed plugins</td><td><span class="b global">global</span></td><td><span class="b ok">in plugin</span></td></tr>`;}
-  if(!any) h+=`<tr><td colspan="4" class="empty">None in config files — check /mcp for managed connectors.</td></tr>`;
+  if(!any) h+=`<tr><td colspan="4" class="empty">None in config files - check /mcp for managed connectors.</td></tr>`;
   h += `</tbody></table></div>`;
 
   $('inventory').innerHTML = h;
 })();
 
-// ============================ FOLDER MAP — 3-MODE VIEW (icicle / sunburst / columns) ============================
+// ============================ FOLDER MAP - 3-MODE VIEW (icicle / sunburst / columns) ============================
 /* ---------- shared ---------- */
 const HEALTH = {bloated:'#DC2626', watch:'#D97706', ok:'#16A34A', missing:'#2563EB', none:'#A8A29E'};
 const HEALTH_LABEL = {bloated:'bloated', watch:'watch', ok:'ok', missing:'missing CLAUDE.md', none:'structure'};
@@ -424,10 +424,10 @@ function tooltipHTML(d){
   const c = colorFor(n);
   let bk = n.backup==='git_remote' ? 'in git'+(n.remote?' ('+n.remote+')':'')
          : n.backup==='git_local' ? 'local commits'
-         : n.backup==='untracked' ? 'not in git' : '—';
+         : n.backup==='untracked' ? 'not in git' : '-';
   const rows = [];
   rows.push(['health', HEALTH_LABEL[n.health]||n.health]);
-  rows.push(['CLAUDE.md', n.claudemd_lines ? n.claudemd_lines+' lines' : '—']);
+  rows.push(['CLAUDE.md', n.claudemd_lines ? n.claudemd_lines+' lines' : '-']);
   rows.push(['backup', bk]);
   if(n.n_skills>0) rows.push(['skills', n.n_skills]);
   rows.push(['sprawl', (n.sprawl||0)+' dirs']);
@@ -761,7 +761,7 @@ function detailCard(n){
     '<div class="dgrid">'+
       cell('CLAUDE.md', n.claudemd_lines? n.claudemd_lines+' lines':'none', n.claudemd_lines>300?'var(--red)':n.claudemd_lines>=200?'var(--orange)':'')+
       cell('backup', bk)+
-      cell('remote', n.remote||'—')+
+      cell('remote', n.remote||'-')+
       cell('skills', n.n_skills||0)+
       cell('sprawl', (n.sprawl||0)+' dirs')+
       cell('git root', n.git_root?'yes':'no')+
