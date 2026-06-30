@@ -1,0 +1,10 @@
+{
+  "name": "map-my-setup",
+  "description": "Audit a Claude Code setup and produce a polished, shareable single-file HTML dashboard: every CLAUDE.md, skill, agent, command, hook, and MCP server, flagged for bloat and version-control gaps, with an interactive folder map and prioritized recommendations.",
+  "version": "1.0.0",
+  "author": { "name": "AI Study Camp" },
+  "homepage": "https://github.com/aistudycamp/skills",
+  "license": "MIT",
+  "keywords": ["audit", "claude-code", "setup", "inventory", "claude-md", "dashboard", "html", "teaching"],
+  "skills": "./skills"
+}

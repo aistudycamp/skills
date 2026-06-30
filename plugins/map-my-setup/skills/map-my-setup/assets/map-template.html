@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<!--
+  Claude Code Setup Audit — single-file dashboard (AISC cream design system).
+  HOW TO USE: copy this file to `claude-system-map.html`, run scripts/scan.py, and paste
+  the JSON from its `===== JSON =====` block into the `const DATA = {{DATA_JSON}}` line below.
+  Everything (findings, map, inventory) renders from that one blob — no hand-editing rows.
+  OPTIONAL: fill DESCRIPTIONS with one-line plain-English summaries keyed by skill/agent/command
+  name so the inventory reads well. Leave it `{}` if you haven't enriched yet.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Setup Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>{{D3_INLINE}}</script>
+<style>
+:root{
+  --bg:#F5F0EB;--surface:#FFFFFF;--surface2:#F0EBE3;--border:rgba(28,25,23,0.12);
+  --text:#1C1917;--text2:#57534E;--accent:#0D9488;
+  --green:#16A34A;--orange:#D97706;--red:#DC2626;--blue:#2563EB;--grey:#A8A29E;
+  --gray:#A8A29E;--dark:#1C1917;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+header{background:#1C1917;color:#F5F0EB;padding:42px 0 34px}
+header .wrap{display:flex;flex-direction:column;gap:8px}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#5EEAD4}
+h1{font-family:'Playfair Display',Georgia,serif;font-size:42px;font-weight:600;letter-spacing:-.02em}
+header .meta{font-size:13.5px;color:#C5BFB6;font-family:'JetBrains Mono',monospace}
+/* tabs */
+.tabs{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--border)}
+.tabs .wrap{display:flex;gap:6px}
+.tab{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.04em;padding:16px 20px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:.2s}
+.tab.active{color:var(--text);border-color:var(--accent)}
+.tab:hover{color:var(--text)}
+.panel{display:none;padding:34px 0 90px}
+.panel.active{display:block}
+h2{font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:600;margin:6px 0 6px;letter-spacing:-.01em}
+.lead{color:var(--text2);font-size:15.5px;margin-bottom:20px;max-width:780px}
+/* stat row */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:18px}
+.stat .n{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:500}
+.stat .l{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+.stat.warn .n{color:var(--red)}
+/* finding cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 26px;margin-bottom:18px;border-left:4px solid var(--accent)}
+.card.red{border-left-color:var(--red)} .card.orange{border-left-color:var(--orange)} .card.blue{border-left-color:var(--blue)} .card.green{border-left-color:var(--green)}
+.card h3{font-size:20px;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.card .pt{color:var(--text2);font-size:14.5px;margin-bottom:14px}
+.pill{font-family:'JetBrains Mono',monospace;font-size:12px;padding:2px 9px;border-radius:20px;background:var(--surface2);color:var(--text2)}
+.pill.red{background:rgba(220,38,38,.12);color:var(--red)} .pill.orange{background:rgba(217,119,6,.12);color:var(--orange)} .pill.green{background:rgba(22,163,74,.12);color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);padding:8px 12px;font-weight:600;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+td:last-child,th:last-child{text-align:right}
+tr:last-child td{border-bottom:none}
+.path{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2)}
+.bar{display:inline-block;height:7px;border-radius:4px;vertical-align:middle;margin-right:8px}
+.num{font-family:'JetBrains Mono',monospace;font-weight:500}
+.b{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:5px;white-space:nowrap}
+.ok{background:rgba(22,163,74,.12);color:var(--green)} .risk{background:rgba(220,38,38,.12);color:var(--red)}
+.warnb{background:rgba(217,119,6,.12);color:var(--orange)} .global{background:rgba(13,148,136,.12);color:var(--accent)} .scoped{background:rgba(37,99,235,.12);color:var(--blue)}
+.empty{color:var(--text2);font-style:italic;font-size:14px}
+/* recommendations */
+.rec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:16px;border-left:4px solid var(--accent)}
+.rec.high{border-left-color:var(--red)} .rec.med{border-left-color:var(--orange)} .rec.low{border-left-color:var(--blue)}
+.rec .rh{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.rec h3{font-size:19px}
+.rec .sev{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:20px}
+.sev.high{background:rgba(220,38,38,.12);color:var(--red)} .sev.med{background:rgba(217,119,6,.12);color:var(--orange)} .sev.low{background:rgba(37,99,235,.12);color:var(--blue)}
+.rec .why{color:var(--text2);font-size:14.5px;margin-bottom:12px}
+.rec .do{background:var(--surface2);border-radius:8px;padding:13px 16px;font-size:14.5px;border-left:3px solid var(--accent)}
+.rec .do b{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);display:block;margin-bottom:4px}
+.rec .paths{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.rec .paths code{background:var(--surface2);padding:3px 8px;border-radius:5px}
+footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)}
+
+/* =================== FOLDER-VIEW (3-mode map) — namespaced =================== */
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* segmented control — restyled for the dashboard's cream surface */
+.segmented{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:4px;gap:3px}
+.seg-btn{font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;color:var(--text2);background:transparent;border:0;cursor:pointer;padding:7px 18px;border-radius:7px;transition:all .15s ease;letter-spacing:.01em}
+.seg-btn:hover{color:var(--text)}
+.seg-btn.active{background:var(--accent);color:#fff;box-shadow:0 1px 6px rgba(13,148,136,.4)}
+
+/* legend (renamed from .legend to avoid collision) */
+.fv-legend{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 18px;display:flex;align-items:center;gap:26px;flex-wrap:wrap;font-size:12px;color:var(--text2);margin:16px 0 4px}
+.legend-group{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.legend-sep{width:1px;height:18px;background:var(--border)}
+.lg{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.swatch{width:12px;height:12px;border-radius:3px;flex:none}
+.lg .label{color:var(--text)}
+.lg .label b{font-weight:600}
+.chip{font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:2px 7px;border-radius:5px;border:1px solid var(--border)}
+.chip.git{color:var(--green);border-color:rgba(22,163,74,.35);background:rgba(22,163,74,.08)}
+.chip.local{color:var(--orange);border-color:rgba(217,119,6,.35);background:rgba(217,119,6,.08)}
+.chip.untracked{color:var(--text2);background:var(--surface)}
+.muted-demo{opacity:.5}
+
+/* view area */
+.fv-main{position:relative;padding:6px 0 20px}
+.view{display:none}
+.view.active{display:block}
+.view-hint{font-size:12px;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.view-hint .crumbs{font-family:'JetBrains Mono',monospace;color:var(--text)}
+.view-hint .crumbs a{color:var(--accent);cursor:pointer;text-decoration:none}
+.view-hint .crumbs a:hover{text-decoration:underline}
+.view-hint .crumbs .sepc{color:var(--gray);margin:0 5px}
+
+/* card (renamed from .card to avoid collision) */
+.fv-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 3px rgba(28,25,23,.05)}
+
+/* icicle / sunburst svg */
+#ic-svg,#sb-svg{display:block;font-family:'DM Sans',sans-serif}
+.node-rect{cursor:pointer;stroke:#FFFFFF;stroke-width:1.2px}
+.node-label{pointer-events:none;font-size:12px;fill:#fff;font-weight:600}
+.node-label.dark{fill:#1C1917}
+.arc{cursor:pointer;stroke:#FFFFFF;stroke-width:1px}
+.center-label{font-weight:600;fill:var(--text)}
+.center-sub{fill:var(--text2);font-family:'JetBrains Mono',monospace}
+
+/* tooltip */
+.tip{position:fixed;pointer-events:none;z-index:50;opacity:0;transition:opacity .12s;background:var(--dark);color:#F5F0EB;border-radius:10px;padding:11px 13px;font-size:12px;max-width:300px;box-shadow:0 8px 30px rgba(0,0,0,.3);line-height:1.5}
+.tip .tp{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#fff;margin-bottom:6px;word-break:break-all}
+.tip .row{display:flex;justify-content:space-between;gap:18px;color:#C9C2B9}
+.tip .row span:last-child{font-family:'JetBrains Mono',monospace;color:#fff}
+.tip .hdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+/* columns (Miller) */
+.miller-wrap{display:flex;gap:0;overflow-x:auto;padding-bottom:8px;align-items:stretch}
+.col{flex:0 0 268px;width:268px;border-right:1px solid var(--border);display:flex;flex-direction:column;max-height:560px}
+.col:first-child{border-left:0}
+.col-head{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);padding:9px 12px 8px;border-bottom:1px solid var(--border);background:var(--surface2);position:sticky;top:0}
+.col-body{overflow-y:auto;padding:5px}
+.mrow{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;cursor:pointer;position:relative;transition:background .1s}
+.mrow:hover{background:var(--surface2)}
+.mrow.sel{background:rgba(13,148,136,.10)}
+.mrow.sel .mname{color:var(--text);font-weight:600}
+.mrow.muted{opacity:.5}
+.mstripe{width:3px;align-self:stretch;border-radius:2px;flex:none}
+.mdot{width:9px;height:9px;border-radius:50%;flex:none}
+.mname{flex:1 1 auto;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.mmeta{display:flex;align-items:center;gap:6px;flex:none}
+.mlines{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600}
+.mbadge{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:1px 5px;border-radius:5px}
+.mchev{color:var(--gray);font-size:13px;flex:none;width:8px}
+.mbk{width:8px;height:8px;border-radius:2px;flex:none}
+
+/* detail card */
+.detail-col{flex:0 0 320px;width:320px;padding:16px;background:var(--surface2)}
+.detail-card h3{font-size:16px;margin-bottom:2px;word-break:break-word}
+.detail-path{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);word-break:break-all;margin-bottom:14px}
+.detail-health{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:5px 11px;border-radius:8px;margin-bottom:16px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.dcell{background:var(--surface);padding:10px 12px}
+.dcell.full{grid-column:1 / -1}
+.dcell .dk{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin-bottom:3px}
+.dcell .dv{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:500;color:var(--text)}
+.detail-empty{color:var(--text2);font-size:13px;text-align:center;padding-top:60px;line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="kicker">Claude Code Setup Audit · generated by the <b>map-my-setup</b> skill</div>
+  <h1 id="title">Setup Audit</h1>
+  <div class="meta" id="subtitle"></div>
+</div></header>
+
+<div class="tabs"><div class="wrap">
+  <div class="tab" data-p="recs">Recommendations</div>
+  <div class="tab" data-p="findings">Findings</div>
+  <div class="tab" data-p="map">Folder map</div>
+  <div class="tab" data-p="inventory">Inventory</div>
+</div></div>
+
+<div class="wrap">
+  <section class="panel" id="recs"></section>
+  <section class="panel" id="findings"></section>
+  <section class="panel" id="map">
+    <h2>Folder map</h2>
+    <p class="lead">Every folder that defines context or holds Claude config, nested as it really is. Pick a lens: <b>Icicle</b> (top-down bands), <b>Sunburst</b> (radial rings), or <b>Columns</b> (Finder-style drill). Color = CLAUDE.md health; click to zoom in, the crumbs or center to come back up.</p>
+
+    <div class="segmented" id="seg">
+      <button class="seg-btn active" data-mode="icicle">Icicle</button>
+      <button class="seg-btn" data-mode="sunburst">Sunburst</button>
+      <button class="seg-btn" data-mode="columns">Columns</button>
+    </div>
+
+    <div class="fv-legend" id="legend">
+      <div class="legend-group" id="lg-health"></div>
+      <div class="legend-sep"></div>
+      <div class="legend-group">
+        <span class="lg"><span class="chip git">in git</span></span>
+        <span class="lg"><span class="chip local">local commits</span></span>
+        <span class="lg"><span class="chip untracked">not in git</span></span>
+      </div>
+      <div class="legend-sep"></div>
+      <div class="legend-group">
+        <span class="lg muted-demo"><span class="swatch" style="background:var(--gray)"></span><span class="label"><b>muted</b> = personal-life, down-ranked</span></span>
+      </div>
+    </div>
+
+    <div class="fv-main">
+      <section class="view active" id="view-icicle">
+        <div class="view-hint">
+          <span class="crumbs" id="ic-crumbs"></span>
+          <span style="color:var(--gray)">— click a segment to zoom, root to reset</span>
+        </div>
+        <div class="fv-card" id="ic-card"><svg id="ic-svg"></svg></div>
+      </section>
+
+      <section class="view" id="view-sunburst">
+        <div class="view-hint">
+          <span class="crumbs" id="sb-crumbs"></span>
+          <span style="color:var(--gray)">— click an arc to zoom in, center to go up</span>
+        </div>
+        <div class="fv-card" id="sb-card" style="display:flex;justify-content:center"><svg id="sb-svg"></svg></div>
+      </section>
+
+      <section class="view" id="view-columns">
+        <div class="view-hint">
+          <span class="crumbs" id="cl-crumbs"></span>
+          <span style="color:var(--gray)">— Finder-style: click a folder to drill right</span>
+        </div>
+        <div class="fv-card" style="overflow:hidden"><div class="miller-wrap" id="miller"></div></div>
+      </section>
+    </div>
+
+    <div class="tip" id="tip"></div>
+  </section>
+  <section class="panel" id="inventory"></section>
+</div>
+
+<script>
+// ============================ DATA (filled by scan.py --html) ============================
+const DATA = {{DATA_JSON}};
+const DESCRIPTIONS = {{DESCRIPTIONS}};       // optional name->one-liner overrides — else {}
+const RECOMMENDATIONS = {{RECOMMENDATIONS}}; // [{title,severity,why,action,paths:[]}] — else []
+// =======================================================================================
+
+const $ = (id)=>document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const descCell = (n,d) => { const t = DESCRIPTIONS[n] || d || ''; return t
+  ? `<td style="text-align:left;color:var(--text2);font-size:13px">${esc(t)}</td>`
+  : `<td style="text-align:left">&mdash;</td>`; };
+function healthColor(lines){ if(!lines) return '#A8A29E'; if(lines>300) return '#DC2626'; if(lines>200) return '#D97706'; return '#16A34A'; }
+
+// ---- header ----
+$('title').textContent = (DATA.workspace||[]).join(' + ') + ' — setup audit';
+$('subtitle').textContent = `host ${DATA.hostname} · ${DATA.totals.meaningful_folders} folders with context/config · ${DATA.totals.claudemd_files} CLAUDE.md files · scanned ${DATA.totals.dirs_scanned} dirs`;
+
+// ---- tabs (default to Recommendations if present, else Findings) ----
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.p===name));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===name));
+  if(name==='map') initFolderView();
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>showTab(t.dataset.p));
+showTab(RECOMMENDATIONS.length ? 'recs' : 'findings');
+
+// ============================ RECOMMENDATIONS ============================
+(function(){
+  const order={high:0,med:1,low:2};
+  const recs=[...RECOMMENDATIONS].sort((a,b)=>(order[a.severity]??3)-(order[b.severity]??3));
+  let h=`<h2>What to change</h2>`;
+  if(!recs.length){
+    h+=`<p class="lead">No recommendations were written into this report yet. This is the part Claude fills in: it reads the flagged CLAUDE.mds and folder shape from the Findings tab and writes what to trim, merge, or add. Re-run the audit through Claude (the <code>map-my-setup</code> skill) to generate them.</p>
+    <div class="card blue"><h3>How to generate these</h3><p class="pt">Ask Claude: <i>"map my setup and write the recommendations."</i> It will read the flagged files and produce concrete, do-this actions here — trimming bloated context, consolidating repeated CLAUDE.mds, and adding missing ones.</p></div>`;
+  } else {
+    h+=`<p class="lead">Concrete changes, highest-impact first. Each one is written to be acted on — by you or by Claude.</p>`;
+    recs.forEach(r=>{
+      const sev=(r.severity||'med');
+      h+=`<div class="rec ${sev}"><div class="rh"><span class="sev ${sev}">${esc(sev)}</span><h3>${esc(r.title||'')}</h3></div>`;
+      if(r.why) h+=`<p class="why">${esc(r.why)}</p>`;
+      if(r.action) h+=`<div class="do"><b>Do this</b>${esc(r.action)}</div>`;
+      if(r.paths&&r.paths.length) h+=`<div class="paths">${r.paths.map(p=>`<code class="path">${esc(p)}</code>`).join('')}</div>`;
+      h+=`</div>`;
+    });
+  }
+  $('recs').innerHTML=h;
+})();
+
+// ============================ FINDINGS ============================
+(function(){
+  const T=DATA.totals, F=DATA.findings;
+  const bloatedHard = F.bloated_claudemds.filter(b=>b.flag==='bloated');
+  const barW = l => Math.min(180, Math.round(l/587*180));
+  let h = `
+   <h2>What the audit found</h2>
+   <p class="lead">Read top to bottom. These are the things worth acting on — bloated context first, gaps and backup risk after.</p>
+   <div class="stats">
+     <div class="stat"><div class="n">${T.claudemd_files}</div><div class="l">CLAUDE.md files</div></div>
+     <div class="stat ${T.bloated?'warn':''}"><div class="n">${T.bloated}</div><div class="l">Bloated (&gt;300 lines)</div></div>
+     <div class="stat"><div class="n">${T.meaningful_folders}</div><div class="l">Folders w/ context or config</div></div>
+     <div class="stat"><div class="n">${T.max_depth}</div><div class="l">Deepest nesting level</div></div>
+   </div>`;
+
+  // bloated
+  h += `<div class="card red"><h3>Bloated context <span class="pill red">${F.bloated_claudemds.length} flagged</span></h3>
+    <p class="pt">A CLAUDE.md is loaded into the model on <b>every turn</b> you work in that folder. Long ones quietly eat the context window. >300 lines is likely too much; 200&ndash;300 is worth a trim. Lengths are guidance, not law — you judge whether the content earns its size.</p>`;
+  if(F.bloated_claudemds.length){
+    h += `<table><thead><tr><th>Folder</th><th>Path</th><th>Lines</th></tr></thead><tbody>`;
+    F.bloated_claudemds.forEach(b=>{
+      const col = b.flag==='bloated'?'#DC2626':'#D97706';
+      h += `<tr><td><b>${esc(b.name)}</b></td><td class="path">${esc(b.path)}</td>
+        <td><span class="bar" style="width:${barW(b.lines)}px;background:${col}"></span><span class="num" style="color:${col}">${b.lines}</span></td></tr>`;
+    });
+    h += `</tbody></table>`;
+  } else h += `<p class="empty">No long CLAUDE.md files. Nice.</p>`;
+  h += `</div>`;
+
+  // missing
+  h += `<div class="card orange"><h3>Warrants a CLAUDE.md <span class="pill orange">${F.missing_claudemd.length}</span></h3>
+    <p class="pt">Git repos with no CLAUDE.md — Claude works in them with no project steer. Umbrella folders (like <code>cc/</code>) don't need one; these are real projects that do.</p>`;
+  if(F.missing_claudemd.length){
+    h += `<table><thead><tr><th>Project</th><th>Path</th><th>Why</th></tr></thead><tbody>`;
+    F.missing_claudemd.forEach(m=> h += `<tr><td><b>${esc(m.name)}</b></td><td class="path">${esc(m.path)}</td><td class="path" style="text-align:right">${esc(m.why)}</td></tr>`);
+    h += `</tbody></table>`;
+  } else h += `<p class="empty">Every git repo has a CLAUDE.md.</p>`;
+  h += `</div>`;
+
+  // backup
+  h += `<div class="card blue"><h3>Backup gaps <span class="pill">${F.backup_gaps.length}</span></h3>
+    <p class="pt">Folders with context/config that live in no git remote — lost if this machine died.</p>`;
+  if(F.backup_gaps.length){
+    h += `<table><thead><tr><th>Folder</th><th>Path</th><th>Status</th></tr></thead><tbody>`;
+    F.backup_gaps.forEach(n=> h += `<tr><td><b>${esc(n.name)}</b></td><td class="path">${esc(n.path)}</td><td><span class="b risk">${esc(n.why)}</span></td></tr>`);
+    h += `</tbody></table>`;
+  } else h += `<p class="empty">Everything with context is in a git remote.</p>`;
+  h += `</div>`;
+
+  // sprawl
+  h += `<div class="card"><h3>Sprawl &amp; shape</h3>
+    <p class="pt">Scanned <b>${T.dirs_scanned}</b> directories; <b>${T.meaningful_folders}</b> actually define context or hold config. Deepest nesting is <b>${T.max_depth}</b> levels. Git worktrees were excluded so nothing is double-counted. Deep nesting isn't wrong, but context that lives 6&ndash;8 levels down is easy to forget you wrote.</p></div>`;
+
+  $('findings').innerHTML = h;
+})();
+
+// ============================ INVENTORY ============================
+(function(){
+  const G=DATA.global, M=G.mcp;
+  const fskills = DATA.folder_skills||[];
+  // Reconcile: in Claude Code a skill IS its own /command. Build ONE list.
+  //  global skills (invokable as /name) + standalone command-files + folder-scoped skills.
+  const cmdOnly = G.commands.filter(c=>!c.also_skill);
+  const items = [
+    ...G.skills.map(s=>({name:s.name,desc:s.desc,scope:'global',source:'skill'})),
+    ...cmdOnly.map(c=>({name:c.name,desc:c.desc,scope:'global',source:'command'})),
+    ...fskills.map(s=>({name:s.name,desc:s.desc,scope:s.scope,source:'skill',backup:s.backup})),
+  ];
+  const srcBadge = it => it.source==='skill'
+    ? `<span class="b" style="background:rgba(13,148,136,.1);color:var(--accent)">skill · /${esc(it.name)}</span>`
+    : `<span class="b" style="background:var(--surface2)">command · /${esc(it.name)}</span>`;
+  const scopeBadge = sc => sc==='global' ? `<span class="b global">global</span>` : `<span class="b scoped">${esc(sc)}</span>`;
+  const invRows = items.length ? items.map(it=>
+     `<tr><td><b>${esc(it.name)}</b></td>${descCell(it.name,it.desc)}<td>${srcBadge(it)}</td><td>${scopeBadge(it.scope)}</td></tr>`).join('')
+     : `<tr><td colspan="4" class="empty">none</td></tr>`;
+
+  let h = `<h2>Inventory</h2>
+   <p class="lead">Everything installed, what it does, and where it works — <span class="b global">global</span> (every project) vs <span class="b scoped">folder-scoped</span> (only inside one folder). In Claude Code a <b>skill is invoked as its own <code>/slash-command</code></b>, so skills and commands are reconciled into one list below rather than counted twice. Global config lives in <code>${esc(G.global_dir)}</code> — CLAUDE.md ${G.global_claudemd_lines} lines, ${esc(G.global_backup)}.</p>
+
+   <div class="card"><h3>Skills &amp; commands <span class="pill">${G.skills.length} global skills · ${fskills.length} folder-scoped · ${cmdOnly.length} command-only</span></h3>
+     <p class="pt">${G.commands.length-cmdOnly.length} of your ${G.commands.length} command files are skills surfaced as <code>/commands</code> — shown once, tagged <b>skill</b>. Folder-scoped skills only load when you're working inside that folder.</p>
+     <table><thead><tr><th>Name</th><th>What it does</th><th>Type</th><th>Scope</th></tr></thead><tbody>${invRows}</tbody></table></div>
+
+   <div class="card"><h3>Agents <span class="pill">${G.agents.length} global</span></h3>
+     <table><thead><tr><th>Agent</th><th>What it does</th><th>Scope</th></tr></thead><tbody>${G.agents.length?G.agents.map(a=>`<tr><td><b>${esc(a.name)}</b></td>${descCell(a.name,a.desc)}<td><span class="b global">global</span></td></tr>`).join(''):`<tr><td colspan="3" class="empty">none</td></tr>`}</tbody></table></div>
+
+   <div class="card"><h3>Hooks <span class="pill">${G.hooks.reduce((a,b)=>a+b.events.length,0)} events</span></h3>`;
+  if(G.hooks.length){
+    h += `<table><thead><tr><th>File</th><th>Events</th></tr></thead><tbody>`;
+    G.hooks.forEach(hk=> h += `<tr><td class="path">${esc(hk.file)}</td><td style="text-align:right">${hk.events.map(e=>`<span class="b">${esc(e)}</span>`).join(' ')}</td></tr>`);
+    h += `</tbody></table>`;
+  } else h += `<p class="empty">No hooks configured.</p>`;
+  h += `</div>`;
+
+  // MCP
+  h += `<div class="card"><h3>MCP servers</h3>
+    <p class="pt">Where a server is configured decides where it's available. Managed claude.ai connectors (Gmail, Calendar, Slack…) aren't in any file — run <code>/mcp</code> to list those.</p>
+    <table><thead><tr><th>Server(s)</th><th>Source</th><th>Scope</th><th>Backed up?</th></tr></thead><tbody>`;
+  let any=false;
+  if(M.user_scope.length){any=true; h+=`<tr><td><b>${M.user_scope.map(esc).join(', ')}</b></td><td class="path">~/.claude.json (user)</td><td><span class="b global">global</span></td><td>&mdash;</td></tr>`;}
+  (DATA.mcp_files||[]).forEach(f=>{any=true; const bk=f.backup==='backed_up'?'<span class="b ok">backed up</span>':'<span class="b warnb">local only</span>';
+    h+=`<tr><td><b>${f.servers.map(esc).join(', ')}</b></td><td class="path">${esc(f.file)}</td><td><span class="b scoped">${esc(f.scope)}</span></td><td>${bk}</td></tr>`;});
+  (M.per_project||[]).forEach(p=>{any=true; h+=`<tr><td><b>${p.servers.map(esc).join(', ')}</b></td><td class="path">${esc(p.folder)} (per-project)</td><td><span class="b scoped">folder only</span></td><td>&mdash;</td></tr>`;});
+  if(M.plugins.length){any=true; h+=`<tr><td><b>${M.plugins.map(esc).join(', ')}</b></td><td class="path">installed plugins</td><td><span class="b global">global</span></td><td><span class="b ok">in plugin</span></td></tr>`;}
+  if(!any) h+=`<tr><td colspan="4" class="empty">None in config files — check /mcp for managed connectors.</td></tr>`;
+  h += `</tbody></table></div>`;
+
+  $('inventory').innerHTML = h;
+})();
+
+// ============================ FOLDER MAP — 3-MODE VIEW (icicle / sunburst / columns) ============================
+/* ---------- shared ---------- */
+const HEALTH = {bloated:'#DC2626', watch:'#D97706', ok:'#16A34A', missing:'#2563EB', none:'#A8A29E'};
+const HEALTH_LABEL = {bloated:'bloated', watch:'watch', ok:'ok', missing:'missing CLAUDE.md', none:'structure'};
+const tip = document.getElementById('tip');
+
+function colorFor(d){ return HEALTH[d.health] || '#A8A29E'; }
+function weight(d){ return (d.sprawl||0) + 1; }
+
+// synthetic root over the workspace roots
+function makeRoot(){
+  return {name: DATA.workspace.join(' + '), path: DATA.workspace.join(' + '),
+          health:'none', synthetic:true, low_priority:false,
+          claudemd_lines:0, n_skills:0, backup:'', sprawl: DATA.totals.dirs_scanned,
+          children: DATA.tree};
+}
+// d3 hierarchy with leaf-weighted value + low_priority-last sort
+function buildHierarchy(){
+  const root = d3.hierarchy(makeRoot(), d => d.children)
+    .sum(d => (d.children && d.children.length) ? 0 : weight(d))
+    .sort((a,b) => (a.data.low_priority - b.data.low_priority) || (b.value - a.value));
+  return root;
+}
+
+function tooltipHTML(d){
+  const n = d.data || d;
+  const c = colorFor(n);
+  let bk = n.backup==='git_remote' ? 'in git'+(n.remote?' ('+n.remote+')':'')
+         : n.backup==='git_local' ? 'local commits'
+         : n.backup==='untracked' ? 'not in git' : '—';
+  const rows = [];
+  rows.push(['health', HEALTH_LABEL[n.health]||n.health]);
+  rows.push(['CLAUDE.md', n.claudemd_lines ? n.claudemd_lines+' lines' : '—']);
+  rows.push(['backup', bk]);
+  if(n.n_skills>0) rows.push(['skills', n.n_skills]);
+  rows.push(['sprawl', (n.sprawl||0)+' dirs']);
+  return '<div class="tp">'+n.path+'</div>'+
+    '<div class="row"><span><span class="hdot" style="background:'+c+'"></span>'+(n.synthetic?'workspace root':'folder')+'</span><span></span></div>'+
+    rows.map(r=>'<div class="row"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>').join('');
+}
+function showTip(e, d){ tip.innerHTML = tooltipHTML(d); tip.style.opacity=1; moveTip(e); }
+function moveTip(e){
+  const pad=14; let x=e.clientX+pad, y=e.clientY+pad;
+  const r=tip.getBoundingClientRect();
+  if(x+r.width>window.innerWidth-8) x=e.clientX-r.width-pad;
+  if(y+r.height>window.innerHeight-8) y=e.clientY-r.height-pad;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideTip(){ tip.style.opacity=0; }
+
+function crumbHTML(nodes, onClick, store){
+  // nodes: array of {label, key}
+  return nodes.map((n,i)=>{
+    const sep = i>0 ? '<span class="sepc">/</span>' : '';
+    if(i===nodes.length-1) return sep+'<span>'+n.label+'</span>';
+    store.push(n);
+    return sep+'<a data-ci="'+(store.length-1)+'">'+n.label+'</a>';
+  }).join('');
+}
+
+/* ---------- header / legend / stats ---------- */
+function renderChrome(){
+  const wsEl=document.getElementById('ws'); if(wsEl) wsEl.textContent = DATA.workspace.join(' + ');
+  const hostEl=document.getElementById('host'); if(hostEl) hostEl.textContent = DATA.hostname;
+  const t = DATA.totals;
+  const statsEl=document.getElementById('stats');
+  if(statsEl){
+    const stats = [
+      {k:'meaningful folders', v:t.meaningful_folders},
+      {k:'CLAUDE.md files', v:t.claudemd_files},
+      {k:'bloated (>300 lines)', v:t.bloated, red:true},
+      {k:'deepest nesting', v:t.max_depth+' levels'}
+    ];
+    statsEl.innerHTML = stats.map(s=>
+      '<div class="stat"><div class="v'+(s.red?' red':'')+'">'+s.v+'</div><div class="k">'+s.k+'</div></div>').join('');
+  }
+  const order=['bloated','watch','ok','missing','none'];
+  const lg=document.getElementById('lg-health');
+  if(lg) lg.innerHTML = order.map(h=>
+    '<span class="lg"><span class="swatch" style="background:'+HEALTH[h]+'"></span><span class="label"><b>'+
+    ({bloated:'bloated',watch:'watch',ok:'ok',missing:'missing',none:'structure'})[h]+'</b></span></span>').join('');
+}
+
+/* ================= ICICLE ================= */
+const IC = {built:false, focus:null};
+function renderIcicle(){
+  if(IC.built) return;
+  IC.built = true;
+  const card = document.getElementById('ic-card');
+  const W = (card.clientWidth || card.parentElement.clientWidth || 1040) - 2;
+  const rowH = 58;
+  const root = buildHierarchy();
+  IC.root = root; IC.focus = root;
+  const maxDepth = d3.max(root.descendants(), d=>d.depth);
+  const H = (maxDepth+1)*rowH;
+  const part = d3.partition().size([W, H]).padding(0);
+  part(root);
+  root.each(d => { d.x0_=d.x0; d.x1_=d.x1; d.y0_=d.y0; d.y1_=d.y1; });
+
+  const svg = d3.select('#ic-svg').attr('width', W).attr('height', H)
+    .attr('viewBox', [0,0,W,H]);
+  svg.selectAll('*').remove();
+  const g = svg.append('g');
+
+  const cells = g.selectAll('g.cell').data(root.descendants()).join('g').attr('class','cell');
+  cells.append('rect')
+    .attr('class','node-rect')
+    .attr('x', d=>d.x0).attr('y', d=>d.y0)
+    .attr('width', d=>Math.max(0,d.x1-d.x0)).attr('height', d=>Math.max(0,d.y1-d.y0))
+    .attr('fill', d=> d.data.synthetic ? '#1C1917' : colorFor(d.data))
+    .attr('fill-opacity', d=> d.data.low_priority ? 0.5 : (d.data.synthetic?1:0.92))
+    .on('mousemove', (e,d)=>{ if(!d.data.synthetic) showTip(e,d); })
+    .on('mouseleave', hideTip)
+    .on('click', (e,d)=>{ hideTip(); icZoom(d); });
+  cells.append('text')
+    .attr('class', d=> 'node-label' + ((d.data.synthetic||['none','missing'].includes(d.data.health)===false && ['ok','none'].includes(d.data.health))?'':'') )
+    .attr('x', d=>d.x0+7).attr('y', d=>d.y0+19)
+    .attr('fill', '#fff')
+    .style('opacity', d=> (d.x1-d.x0)>34 ? 1 : 0)
+    .text(d=> d.data.synthetic ? '~ '+d.data.name : d.data.name)
+    .each(function(d){ clampLabel(this, d.x1-d.x0-12); });
+  cells.append('text')
+    .attr('class','node-label mono')
+    .attr('x', d=>d.x0+7).attr('y', d=>d.y0+36)
+    .attr('fill','rgba(255,255,255,.85)')
+    .style('font-size','10.5px').style('font-weight','500')
+    .style('opacity', d=> (d.x1-d.x0)>54 && !d.data.synthetic ? 1 : 0)
+    .text(d=> d.data.claudemd_lines? d.data.claudemd_lines+'L' : (d.data.n_skills? d.data.n_skills+' skills':''));
+
+  IC.cells = cells; IC.W=W; IC.H=H; IC.svg=svg;
+  icCrumbs();
+}
+function clampLabel(node, maxW){
+  if(maxW<=10){ node.textContent=''; return; }
+  let t = node.textContent;
+  while(node.getComputedTextLength()>maxW && t.length>1){ t=t.slice(0,-1); node.textContent=t+'…'; }
+}
+function icZoom(p){
+  if(p.data.synthetic) p = IC.root;
+  IC.focus = p;
+  const W=IC.W;
+  const px0=p.x0_, px1=p.x1_, pd=p.depth;
+  const k = W/(px1-px0);
+  IC.root.each(d=>{
+    d.tx0 = (d.x0_-px0)*k;
+    d.tx1 = (d.x1_-px0)*k;
+    d.ty0 = d.y0_ - pd*58;
+    d.ty1 = d.y1_ - pd*58;
+  });
+  const t = IC.svg.transition().duration(620);
+  IC.cells.select('rect').transition(t)
+    .attr('x', d=>d.tx0).attr('width', d=>Math.max(0,d.tx1-d.tx0))
+    .attr('y', d=>d.ty0).attr('height', d=>Math.max(0,d.ty1-d.ty0));
+  IC.cells.selectAll('text').each(function(){ this.__sx = +this.getAttribute('x'); });
+  IC.cells.select('text:nth-of-type(1)').transition(t)
+    .attr('x', d=>d.tx0+7).attr('y', d=>d.ty0+19)
+    .style('opacity', d=> (d.tx1-d.tx0)>34 && d.ty1>0 ? 1:0)
+    .tween('lbl', function(d){ const self=this; return ()=>{ self.textContent = d.data.synthetic?'~ '+d.data.name:d.data.name; clampLabel(self,(d.tx1-d.tx0)-12); }; });
+  IC.cells.select('text:nth-of-type(2)').transition(t)
+    .attr('x', d=>d.tx0+7).attr('y', d=>d.ty0+36)
+    .style('opacity', d=> (d.tx1-d.tx0)>54 && !d.data.synthetic && d.ty1>0 ? 1:0);
+  // commit base coords
+  IC.root.each(d=>{ d.x0_=d.tx0; d.x1_=d.tx1; d.y0_=d.ty0; d.y1_=d.ty1; });
+  icCrumbs();
+}
+function icCrumbs(){
+  const store=[]; const path=IC.focus.ancestors().reverse();
+  const nodes = path.map(d=>({label: d.data.synthetic?'~ root':d.data.name, node:d}));
+  const el = document.getElementById('ic-crumbs');
+  el.innerHTML = crumbHTML(nodes.map(n=>({label:n.label})), null, store);
+  IC._crumbNodes = path;
+  el.querySelectorAll('a').forEach((a,i)=>{ a.onclick=()=>icZoom(path[i]); });
+}
+
+/* ================= SUNBURST ================= */
+const SB = {built:false};
+function renderSunburst(){
+  if(SB.built) return;
+  SB.built=true;
+  const card = document.getElementById('sb-card');
+  const size = Math.min((card.clientWidth || card.parentElement.clientWidth || 1040)-2, 620);
+  const RINGS = 3;
+  const radius = (size/2)/(RINGS+1);
+  const root = buildHierarchy();
+  root.each(d=>d.current = d);
+  SB.root=root; SB.size=size; SB.radius=radius; SB.RINGS=RINGS;
+
+  const part = d3.partition().size([2*Math.PI, root.height+1]);
+  part(root);
+  root.each(d=> d.current = {x0:d.x0,x1:d.x1,y0:d.y0,y1:d.y1});
+
+  const arc = d3.arc()
+    .startAngle(d=>d.x0).endAngle(d=>d.x1)
+    .padAngle(d=>Math.min((d.x1-d.x0)/2,0.005)).padRadius(radius*1.5)
+    .innerRadius(d=>d.y0*radius)
+    .outerRadius(d=>Math.max(d.y0*radius, d.y1*radius-1));
+  SB.arc=arc;
+
+  const svg = d3.select('#sb-svg').attr('width', size).attr('height', size)
+    .attr('viewBox',[-size/2,-size/2,size,size]);
+  svg.selectAll('*').remove();
+  SB.svg=svg;
+  SB.g = svg.append('g');
+
+  const path = SB.g.selectAll('path').data(root.descendants().slice(1)).join('path')
+    .attr('class','arc')
+    .attr('fill', d=> d.data.synthetic? '#1C1917': colorFor(d.data))
+    .attr('fill-opacity', d=> arcVisible(d.current) ? (d.data.low_priority?0.5:0.9) : 0)
+    .attr('pointer-events', d=> arcVisible(d.current)?'auto':'none')
+    .attr('d', d=>arc(d.current));
+  path.on('mousemove',(e,d)=>showTip(e,d)).on('mouseleave',hideTip)
+      .on('click',(e,d)=>{ hideTip(); sbZoom(d); });
+  SB.path=path;
+
+  const label = SB.g.selectAll('text.arclbl').data(root.descendants().slice(1)).join('text')
+    .attr('class','arclbl').attr('dy','0.32em')
+    .style('font-size','10.5px').style('font-weight','600')
+    .style('fill', d=> labelDark(d.data)?'#1C1917':'#fff')
+    .attr('pointer-events','none').attr('text-anchor','middle')
+    .attr('fill-opacity', d=>+labelVisible(d.current))
+    .attr('transform', d=>labelTransform(d.current))
+    .text(d=> d.data.name.length>16? d.data.name.slice(0,15)+'…' : d.data.name);
+  SB.label=label;
+
+  // center
+  SB.center = SB.g.append('circle').attr('r', radius).attr('fill','#fff')
+    .attr('stroke','var(--border)').attr('pointer-events','all').style('cursor','pointer')
+    .on('click',()=>{ hideTip(); sbUp(); });
+  SB.cText = SB.g.append('text').attr('class','center-label').attr('text-anchor','middle')
+    .attr('dy','-0.1em').style('font-size','14px');
+  SB.cSub = SB.g.append('text').attr('class','center-sub').attr('text-anchor','middle')
+    .attr('dy','1.3em').style('font-size','10px');
+  SB.focus = root;
+  sbCenterLabel();
+  sbCrumbs();
+}
+function labelDark(n){ return n.synthetic? false : (n.health==='none'); }
+function arcVisible(d){ return d.y1<=SB.RINGS+1 && d.y0>=1 && d.x1>d.x0; }
+function labelVisible(d){ return d.y1<=SB.RINGS+1 && d.y0>=1 && (d.y1-d.y0)*(d.x1-d.x0)>0.045; }
+function labelTransform(d){
+  const x=(d.x0+d.x1)/2*180/Math.PI;
+  const y=(d.y0+d.y1)/2*SB.radius;
+  return 'rotate('+(x-90)+') translate('+y+',0) rotate('+(x<180?0:180)+')';
+}
+function sbZoom(p){
+  SB.focus = p;
+  SB.root.each(d=> d.target = {
+    x0: Math.max(0, Math.min(1,(d.x0-p.x0)/(p.x1-p.x0)))*2*Math.PI,
+    x1: Math.max(0, Math.min(1,(d.x1-p.x0)/(p.x1-p.x0)))*2*Math.PI,
+    y0: Math.max(0, d.y0-p.depth),
+    y1: Math.max(0, d.y1-p.depth)
+  });
+  const t = SB.g.transition().duration(680);
+  SB.path.transition(t).tween('data', d=>{
+    const i=d3.interpolate(d.current,d.target); return tt=>d.current=i(tt);
+  })
+  .attr('fill-opacity', d=> arcVisible(d.target)?(d.data.low_priority?0.5:0.9):0)
+  .attr('pointer-events', d=> arcVisible(d.target)?'auto':'none')
+  .attrTween('d', d=>()=>SB.arc(d.current));
+  SB.label.transition(t)
+    .attr('fill-opacity', d=>+labelVisible(d.target))
+    .attrTween('transform', d=>()=>labelTransform(d.current));
+  sbCenterLabel(); sbCrumbs();
+}
+function sbUp(){
+  if(SB.focus===SB.root) return;
+  sbZoom(SB.focus.parent || SB.root);
+}
+function sbCenterLabel(){
+  const f=SB.focus;
+  SB.cText.text(f.data.synthetic? '~ root' : (f.data.name.length>14? f.data.name.slice(0,13)+'…':f.data.name));
+  SB.cSub.text(f===SB.root? DATA.totals.meaningful_folders+' folders' : (f.data.sprawl+1)+' dirs');
+}
+function sbCrumbs(){
+  const path=SB.focus.ancestors().reverse();
+  const el=document.getElementById('sb-crumbs');
+  el.innerHTML = path.map((d,i)=>{
+    const lbl=d.data.synthetic?'~ root':d.data.name;
+    const sep=i>0?'<span class="sepc">/</span>':'';
+    return i===path.length-1? sep+'<span>'+lbl+'</span>' : sep+'<a data-i="'+i+'">'+lbl+'</a>';
+  }).join('');
+  el.querySelectorAll('a').forEach((a,i)=>{ a.onclick=()=>sbZoom(path[i]); });
+}
+
+/* ================= COLUMNS (Miller) ================= */
+const CL = {built:false, path:[], sel:[]};
+function sortKids(arr){
+  return arr.slice().sort((a,b)=> (a.low_priority-b.low_priority) || (b.impact-a.impact));
+}
+function renderColumns(){
+  if(CL.built) return;
+  CL.built=true;
+  CL.cols = [ sortKids(DATA.tree) ]; // each entry = array of sibling nodes
+  CL.path = [];  // selected node per column index
+  drawColumns();
+}
+function drawColumns(){
+  const wrap=document.getElementById('miller');
+  wrap.innerHTML='';
+  CL.cols.forEach((sibs, ci)=>{
+    const col=document.createElement('div'); col.className='col';
+    const head=document.createElement('div'); head.className='col-head';
+    head.textContent = ci===0 ? 'workspace' : (CL.path[ci-1] ? CL.path[ci-1].name : '');
+    col.appendChild(head);
+    const body=document.createElement('div'); body.className='col-body';
+    sibs.forEach(n=>{
+      body.appendChild(mRow(n, ci));
+    });
+    col.appendChild(body);
+    wrap.appendChild(col);
+  });
+  // detail
+  const sel = CL.path[CL.path.length-1];
+  const dcol=document.createElement('div'); dcol.className='detail-col';
+  dcol.appendChild(detailCard(sel));
+  wrap.appendChild(dcol);
+  wrap.scrollLeft = wrap.scrollWidth;
+  clCrumbs();
+}
+function mRow(n, ci){
+  const row=document.createElement('div');
+  row.className='mrow'+(n.low_priority?' muted':'');
+  if(CL.path[ci]===n) row.className+=' sel';
+  const c=colorFor(n);
+  const hasKids = n.children && n.children.length;
+  const stripe=document.createElement('div'); stripe.className='mstripe'; stripe.style.background=c;
+  const dot=document.createElement('div'); dot.className='mdot'; dot.style.background=c;
+  const name=document.createElement('div'); name.className='mname'; name.textContent=n.name;
+  const meta=document.createElement('div'); meta.className='mmeta';
+  if(n.claudemd_lines>0){ const l=document.createElement('span'); l.className='mlines'; l.style.color=c; l.textContent=n.claudemd_lines+'L'; meta.appendChild(l); }
+  if(n.n_skills>0){ const b=document.createElement('span'); b.className='mbadge'; b.textContent=n.n_skills+'sk'; meta.appendChild(b); }
+  const bk=document.createElement('span'); bk.className='mbk';
+  bk.style.background = n.backup==='git_remote'?'var(--green)': n.backup==='git_local'?'var(--orange)':'var(--gray)';
+  bk.title = n.backup==='git_remote'?'in git': n.backup==='git_local'?'local commits':'not in git';
+  meta.appendChild(bk);
+  const chev=document.createElement('div'); chev.className='mchev'; chev.textContent=hasKids?'›':'';
+  row.append(stripe,dot,name,meta,chev);
+  row.onclick=()=>clSelect(n, ci);
+  return row;
+}
+function clSelect(n, ci){
+  CL.path = CL.path.slice(0,ci);
+  CL.path[ci]=n;
+  CL.cols = CL.cols.slice(0,ci+1);
+  if(n.children && n.children.length){
+    CL.cols.push(sortKids(n.children));
+  }
+  drawColumns();
+}
+function detailCard(n){
+  const wrap=document.createElement('div'); wrap.className='detail-card';
+  if(!n){
+    wrap.innerHTML='<div class="detail-empty">Select a folder to see its detail.<br><span class="mono" style="font-size:11px">path · health · CLAUDE.md · backup · skills · sprawl</span></div>';
+    return wrap;
+  }
+  const c=colorFor(n);
+  const bk = n.backup==='git_remote'?'in git': n.backup==='git_local'?'local commits':'not in git';
+  const impact = n.impact;
+  wrap.innerHTML =
+    '<h3>'+n.name+'</h3>'+
+    '<div class="detail-path mono">'+n.path+'</div>'+
+    '<div class="detail-health" style="background:'+hex2rgba(c,.12)+';color:'+c+'">'+
+      '<span class="mdot" style="background:'+c+'"></span>'+(HEALTH_LABEL[n.health]||n.health)+'</div>'+
+    '<div class="dgrid">'+
+      cell('CLAUDE.md', n.claudemd_lines? n.claudemd_lines+' lines':'none', n.claudemd_lines>300?'var(--red)':n.claudemd_lines>=200?'var(--orange)':'')+
+      cell('backup', bk)+
+      cell('remote', n.remote||'—')+
+      cell('skills', n.n_skills||0)+
+      cell('sprawl', (n.sprawl||0)+' dirs')+
+      cell('git root', n.git_root?'yes':'no')+
+      cell('meaningful kids', n.n_meaningful_kids||0)+
+      cell('depth', 'level '+n.depth)+
+      cell('impact rank', (impact>=0?'+':'')+impact, impact<0?'var(--gray)':'', true)+
+    '</div>';
+  return wrap;
+}
+function cell(k,v,color,full){
+  return '<div class="dcell'+(full?' full':'')+'"><div class="dk">'+k+'</div><div class="dv"'+(color?' style="color:'+color+'"':'')+'>'+v+'</div></div>';
+}
+function hex2rgba(hex,a){
+  const h=hex.replace('#',''); const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+  return 'rgba('+r+','+g+','+b+','+a+')';
+}
+function clCrumbs(){
+  const el=document.getElementById('cl-crumbs');
+  const parts=[{label:'~ root', idx:-1}].concat(CL.path.map((n,i)=>({label:n.name, idx:i})));
+  el.innerHTML = parts.map((p,i)=>{
+    const sep=i>0?'<span class="sepc">/</span>':'';
+    return i===parts.length-1? sep+'<span>'+p.label+'</span>' : sep+'<a data-idx="'+p.idx+'">'+p.label+'</a>';
+  }).join('');
+  el.querySelectorAll('a').forEach(a=>{
+    const idx=+a.dataset.idx;
+    a.onclick=()=>{ if(idx<0){ CL.path=[]; CL.cols=[sortKids(DATA.tree)]; drawColumns(); } else { clSelect(CL.path[idx], idx); } };
+  });
+}
+
+/* ---------- mode switching ---------- */
+const RENDERERS = {icicle:renderIcicle, sunburst:renderSunburst, columns:renderColumns};
+function switchMode(mode){
+  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+mode).classList.add('active');
+  hideTip();
+  RENDERERS[mode]();
+}
+document.getElementById('seg').addEventListener('click', e=>{
+  const b=e.target.closest('.seg-btn'); if(b) switchMode(b.dataset.mode);
+});
+window.addEventListener('mousemove', e=>{ if(tip.style.opacity==='1') moveTip(e); });
+
+// lazy-init: only render once the map tab is first shown (charts need a visible, sized container)
+let fvInited=false;
+function initFolderView(){
+  if(fvInited) return; fvInited=true;
+  renderChrome();
+  requestAnimationFrame(()=>switchMode('icicle'));
+}
+</script>
+<footer class="wrap" style="display:block">Generated by the <b>map-my-setup</b> skill &middot; read-only audit, nothing was changed &middot; regenerate any time by asking Claude to "map my setup".</footer>
+</body>
+</html>
